@@ -75,7 +75,7 @@ done
 # verify wether there are from thesame source or are from different sources 
 if [ $count -eq 0 ] ; then 
    echo $count "All the files are from thesame repository"
-   c_flag="-Wall  -Wextra -std=c11"
+   c_flag="-Wall  -g -Werror -Wextra -std=c11"
 else 
    echo "There are $count sub folders containing the C files"  
    include_folder=() 
@@ -85,7 +85,7 @@ done < <(find $PROJECT_PATH -name "*.h" -print0)
    #to obtain the name of the directory inwhich there are .h files
     i_path=$(basename $(dirname $(realpath "${include_folder[@]}")))
     echo $i_path
-    c_flag="-Wall  -Wextra -std=c11 -I$i_path"
+    c_flag="-Wall -g -Werror -Wextra -std=c11 -I$i_path"
 fi 
 
 ### recherchons s'il existe un Makefile déjà présent et si oui on demande à l'utilisateur s'il desire généré un nouveau makefile ou le conserver
@@ -136,7 +136,23 @@ echo "BUILD_DIR=build" >> $Makefile
 #object sources 
 OBJ_SRC="${array[@]}"
 echo "OBJS_SRC=$OBJ_SRC" >> $Makefile
-echo "OBJS=\$(patsubst %.c, \$(BUILD_DIR)%.o , \$(OBJ_SRC))" >> $Makefile #put \ before $ enables us to suppress it and echo it in the file 
+echo "OBJS=\$(patsubst %.c, %.o , \$(OBJS_SRC))" >> $Makefile #put \ before $ enables us to suppress it and echo it in the file 
+##check wether a target is passed or not
+echo "ifeq (\$(MAKECMDGOALS),)" >> $Makefile
+echo "\$(error \"error please pass a target, either clean or and run\")" >> $Makefile
 
-echo ".PHONY: clean build run" >> $Makefile 
+echo "endif" >> $Makefile
+echo ".PHONY: clean run" >> $Makefile 
+
+echo "clean :" >> $Makefile 
+echo -e "\trm -rf build" >> $Makefile
+echo "run :bin " >> $Makefile 
+echo -e "\t./$^ " >> $Makefile 
+echo -e "\tmv \$^ \$(BUILD_DIR)" >> $Makefile
+echo "bin : \$(OBJS)" >> $Makefile
+echo -e "\t\$(CC) \$(CFLAG) $^ -o \$@" >> $Makefile
+echo -e "\tmv \$^ \$(BUILD_DIR)" >> $Makefile 
+echo "%.o : %.c" >> $Makefile
+echo -e "\t\$(CC) -c \$(CFLAG)  $^ -o \$@" >> $Makefile 
+ 
 
