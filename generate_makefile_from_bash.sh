@@ -84,6 +84,33 @@ done < <(find $PROJECT_PATH -name "*.h" -print0)
    #to obtain the name of the directory inwhich there are .h files
     i_path=$(basename $(dirname $(realpath "${include_folder[@]}")))
     echo $i_path
-    
 fi 
+
+### recherchons s'il existe un Makefile déjà présent et si oui on demande à l'utilisateur s'il desire généré un nouveau makefile ou le conserver
+#search for makefile in the folder
+Makefile="$PROJECT_PATH/Makefile"
+makefile_file=() 
+   while IFS= read -r -d $'\0'  ; do 
+      makefile_file+=("$REPLY")
+done < <(find $PROJECT_PATH -name "Makefile" -print0) 
+#test if a makefile exists
+if [ ${#makefile_file[@]} -eq 0 ]  ; then 
+echo " No Makefile exists we are going to generate on.............."
+touch $Makefile 
+else 
+  echo -n "Would you like to generate a new  Makefile ? : " # -n prevents echo to print a new line  
+  read  ans   #to read input from terminale
+  case $ans in 
+  [Yy] | [Yy][eE][sS] ) # to test either y or Y or yes or YES or Yes or yEs or yeS or YeS or yES or YEs
+  echo "generating a new file............................"
+  rm $Makefile
+  touch $Makefile ;;
+  [Nn] | [Nn][Oo] ) # to test either n or N or No or nO or NO or no 
+  echo "No generation done !"
+  exit 1 ;;
+  *) 
+  echo "Please either put y/n or yes/no " 
+   exit 1 ;;
+   esac 
+fi
 
