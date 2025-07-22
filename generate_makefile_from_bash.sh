@@ -76,6 +76,14 @@ done
 if [ $count -eq 0 ] ; then 
    echo $count "All the files are from thesame repository"
 else 
-   echo "There are $count sub folders containing the C files"   
+   echo "There are $count sub folders containing the C files"  
+   include_folder=() 
+   while IFS= read -r -d $'\0'  ; do 
+      include_folder+=("$REPLY")
+done < <(find $PROJECT_PATH -name "*.h" -print0) 
+   #to obtain the name of the directory inwhich there are .h files
+    i_path=$(basename $(dirname $(realpath "${include_folder[@]}")))
+    echo $i_path
+    
 fi 
 
