@@ -13,9 +13,16 @@ while [[ $# -gt 0 ]] ; do
    --compile_file)
    COMPILE_FILE="$2"
    shift 2 ;;
+   --help|-h)
+   echo "The aim of this script is to generate a makefile for compilation of c/c++ code "
+   echo "In the --path option please provide an absolute path for the directory to be used"
+   echo " In the --compile_file flag you should either provide c or cpp "
+   shift 2
+   exit 1  ;;
    
    *) 
-   echo "Error" 
+   echo "Error"
+   echo "please do $0 --help for more info" #$0 is to get the name of the script being executed 
    shift 2 
    exit 1 ;;
   esac
@@ -29,7 +36,7 @@ fi
 if [ $COMPILE_FILE == "c" ] ; then 
  CC=gcc 
  
- elif [ $COMPILE_FILE == "c++" ] ; then 
+ elif [ $COMPILE_FILE == "cpp" ] ; then 
   CC=g++ 
   else 
       echo "error in the source code to compile "
@@ -39,12 +46,12 @@ if [ $COMPILE_FILE == "c" ] ; then
 array=()
 while IFS= read -r -d $'\0'  ; do 
       array+=("$REPLY")
-done < <(find $PROJECT_PATH -name "*.c" -print0) 
+done < <(find $PROJECT_PATH -name "*$COMPILE_FILE" -print0) 
 
 
 # Checking  if there exist c files
 if [ ${#array[@]} -eq 0 ]; then
-    echo "No .c files found, please provide a folder that has c"
+    echo "No $COMPILE_FILE files found, please provide a folder that contains $COMPILE_FILE"
     exit 1
 fi
 ########################################################################################
