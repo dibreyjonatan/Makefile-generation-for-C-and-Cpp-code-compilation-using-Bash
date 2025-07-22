@@ -2,14 +2,14 @@
 
 #global variable to store the directory path
 PROJECT_PATH=""  
- COMPILE_FILE=""
+COMPILE_FILE=""
 
-while [[ $# -gt 0 ]] ; do
+while [[ $# -gt 0 ]] ; do 
   case "$1" in 
-   --path)
+   --path)        
    PROJECT_PATH="$2"
-   shift 2  ;;
-  
+   shift 2  ;;  # the shift reduces the value $# by 2 so as the loop continues it decreases by 2 ($#-2)
+                # ;; or ‘;&’, or ‘;;&’ is to break the case option after it is being executed 
    --compile_file)
    COMPILE_FILE="$2"
    shift 2 ;;
@@ -34,5 +34,41 @@ if [ $COMPILE_FILE == "c" ] ; then
   else 
       echo "error in the source code to compile "
       fi 
-      
+
+#we need to create an Array of string to store all the c files  path    
+array=()
+while IFS= read -r -d $'\0'  ; do 
+      array+=("$REPLY")
+done < <(find $PROJECT_PATH -name "*.c" -print0) 
+
+
+# Checking  if there exist c files
+if [ ${#array[@]} -eq 0 ]; then
+    echo "No .c files found, please provide a folder that has c"
+    exit 1
+fi
+########################################################################################
+#faced a lot of problem here due to synthax with dirname and realpath
+# NB: use " " when dealing with string variables 
+#we need to loop through each file path to do a comparaison if there are from thesame directory or not
+#let's create two variables 
+#one variable to store a count and one to store the reference
+count=0     #initialise the variable to 0 
+reference=$(dirname "$(realpath "${array[0]}")")
+ # calculate the reference using the first element of the array i.e the absolute path of the directory of the first c file 
+# dirname and realpath enables us to obtain the directory in which the code is found  
+for file in "${array[@]}" ;
+do 
+   actual=$(dirname "$(realpath "$file")")
+
+   if [ "$reference" != "$actual" ] ; then 
+    count=$(expr $count + 1) # we can also write count=$((count+1))
+    fi    
+done 
+# verify wether there are from thesame source or are from different sources 
+if [ $count -eq 0 ] ; then 
+   echo $count "All the files are from thesame repository"
+else 
+   echo "There are $count sub folders containing the C files"   
+fi 
 
