@@ -1,5 +1,9 @@
 #!/bin/bash 
 
+#Author : KAMDA TEZEBO DIBREY JONATAN
+#Description : Generation of Makefile for compilation
+#version : 1.0 
+ 
 #global variable to store the directory path
 PROJECT_PATH=""  
 COMPILE_FILE=""
@@ -120,6 +124,8 @@ fi
 # Generation of Makefile 
 ############################################################################################################
 # compiler 
+echo "#This Makefile was automatically generated using $0" >> $Makefile
+echo "#For any problem report bug by opening an issue in the github project">> $Makefile
 echo "CC=$CC" >> $Makefile
 # cflags
 echo "CFLAG=$c_flag" >> $Makefile 
