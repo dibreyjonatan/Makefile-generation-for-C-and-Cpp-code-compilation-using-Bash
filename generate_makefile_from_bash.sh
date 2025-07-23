@@ -46,7 +46,7 @@ if [ $COMPILE_FILE == "c" ] ; then
 array=()
 while IFS= read -r -d $'\0'  ; do 
       array+=("$REPLY")
-done < <(find $PROJECT_PATH -name "*$COMPILE_FILE" -print0) 
+done < <(find $PROJECT_PATH -name "*.$COMPILE_FILE" -print0) 
 
 
 # Checking  if there exist c files
@@ -127,7 +127,16 @@ echo "CFLAG=$c_flag" >> $Makefile
 build="$PROJECT_PATH/build"
 #checks if the repo exists using the -d flag 
  if [[  -d $build ]] ; then 
-   echo "the repository exists no need of creating one "
+   echo "the repository $build exists no need of creating one "
+   listing=$(ls $build ) # to get the output of list
+   if [ -z $listing ] ; then  #checking if the list if empty i.e comparing length of string to null
+   echo "repo is empty no no need of cleaning"
+   else
+   echo " following files $listing of $build will be deleted"
+   echo "cleaning of it content............"
+   rm $build/* 
+   echo "cleaning done, $build is empty"
+   fi
  else 
    mkdir $build
 fi     
@@ -145,13 +154,13 @@ echo "endif" >> $Makefile
 echo ".PHONY: clean run" >> $Makefile 
 
 echo "clean :" >> $Makefile 
-echo -e "\trm -rf build" >> $Makefile
+echo -e "\trm build/*" >> $Makefile
 echo "run :bin " >> $Makefile 
 echo -e "\t./$^ " >> $Makefile 
-echo -e "\tmv \$^ \$(BUILD_DIR)" >> $Makefile
+echo -e "\t@mv \$^ \$(BUILD_DIR)" >> $Makefile
 echo "bin : \$(OBJS)" >> $Makefile
 echo -e "\t\$(CC) \$(CFLAG) $^ -o \$@" >> $Makefile
-echo -e "\tmv \$^ \$(BUILD_DIR)" >> $Makefile 
+echo -e "\t@mv \$^ \$(BUILD_DIR)" >> $Makefile 
 echo "%.o : %.c" >> $Makefile
 echo -e "\t\$(CC) -c \$(CFLAG)  $^ -o \$@" >> $Makefile 
  
