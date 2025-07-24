@@ -7,7 +7,7 @@
 #global variable to store the directory path
 PROJECT_PATH=""  
 COMPILE_FILE=""
-
+COVERAGE_OPTION=""
 while [[ $# -gt 0 ]] ; do 
   case "$1" in 
    --path)        
@@ -21,9 +21,12 @@ while [[ $# -gt 0 ]] ; do
    echo "The aim of this script is to generate a makefile for compilation of c/c++ code "
    echo "In the --path option please provide an absolute path for the directory to be used"
    echo " In the --compile_file flag you should either provide c or cpp "
+   echo " In the --coverage flag you should provide yes or YES or Y or y, if you wish to use coverage "
    shift 2
    exit 1  ;;
-   
+   --coverage )
+   COVERAGE_OPTION="$2"
+   shift 2 ;;
    *) 
    echo "Error"
    echo "please do $0 --help for more info" #$0 is to get the name of the script being executed 
@@ -108,7 +111,7 @@ else
   read  ans   #to read input from terminale
   case $ans in 
   [Yy] | [Yy][eE][sS] ) # to test either y or Y or yes or YES or Yes or yEs or yeS or YeS or yES or YEs
-  echo "generating a new file............................"
+  echo "generating a new Makefile............................"
   rm $Makefile
   touch $Makefile ;;
   [Nn] | [Nn][Oo] ) # to test either n or N or No or nO or NO or no 
@@ -120,6 +123,15 @@ else
    esac 
 fi
 
+
+if [ $COVERAGE_OPTION == yes  -o $COVERAGE_OPTION == y -o $COVERAGE_OPTION == Y -o $COVERAGE_OPTION == YES ] ; then 
+    value=yes 
+    condition_flag="-fprofile-arcs -ftest-coverage"
+
+else 
+ condition_flag=""
+  echo "wrong coverage option, run $0 --help for more info  "
+ fi  
 ############################################################################################################
 # Generation of Makefile 
 ############################################################################################################
@@ -128,17 +140,18 @@ echo "#This Makefile was automatically generated using $0" >> $Makefile
 echo "#For any problem report bug by opening an issue in the github project">> $Makefile
 echo "CC=$CC" >> $Makefile
 # cflags
-echo "CFLAG=$c_flag" >> $Makefile 
+echo "CFLAG=$c_flag $condition_flag" >> $Makefile 
 #build path
 build="$PROJECT_PATH/build"
 #checks if the repo exists using the -d flag 
  if [[  -d $build ]] ; then 
    echo "the repository $build exists no need of creating one "
    listing=$(ls $build ) # to get the output of list
-   if [ -z $listing ] ; then  #checking if the list if empty i.e comparing length of string to null
+   if [  ${#listing} -eq 0 ] ; then  #did corrections as string was too large,so i did comparaison of length to 0 by auto calculating the length
+                                     # but in the previous commits, the string length was compared to 0 which cause bugs as build list increases in size.
    echo "repo is empty no no need of cleaning"
    else
-   echo " following files $listing of $build will be deleted"
+   echo " The following files of $build will be deleted : $listing "
    echo "cleaning of it content............"
    rm $build/* 
    echo "cleaning done, $build is empty"
@@ -146,7 +159,8 @@ build="$PROJECT_PATH/build"
  else 
    mkdir $build
 fi     
- 
+   
+echo "COVERAGE=$value" >> $Makefile 
 echo "BUILD_DIR=build" >> $Makefile
 #object sources 
 OBJ_SRC="${array[@]}"
@@ -160,14 +174,23 @@ echo "endif" >> $Makefile
 echo ".PHONY: clean run" >> $Makefile 
 
 echo "clean :" >> $Makefile 
-echo -e "\trm build/*" >> $Makefile
+echo -e "\trm build/* ||:" >> $Makefile
+echo -e "\trm -r coverage_report ||:" >> $Makefile
 echo "run :bin " >> $Makefile 
 echo -e "\t./$^ " >> $Makefile 
+echo "ifeq (\$(COVERAGE),yes)" >> $Makefile
+echo -e "\tlcov --directory . --capture --output-file coverage.info" >>$Makefile
+echo -e "\tgenhtml coverage.info --output-directory coverage_report" >>$Makefile
+echo -e "\t@mv *.info \$(BUILD_DIR)" >>$Makefile
+echo -e "\t@mv *.gcda \$(BUILD_DIR)" >>$Makefile
+echo -e "\t@mv *.gcno \$(BUILD_DIR)" >>$Makefile
+echo "endif" >> $Makefile
 echo -e "\t@mv \$^ \$(BUILD_DIR)" >> $Makefile
 echo "bin : \$(OBJS)" >> $Makefile
 echo -e "\t\$(CC) \$(CFLAG) $^ -o \$@" >> $Makefile
 echo -e "\t@mv \$^ \$(BUILD_DIR)" >> $Makefile 
 echo "%.o : %.c" >> $Makefile
 echo -e "\t\$(CC) -c \$(CFLAG)  $^ -o \$@" >> $Makefile 
- 
-
+echo "generation done.................................."
+echo -n "To run the makefile use this command "
+echo  "make -C $PROJECT_PATH clean run"
