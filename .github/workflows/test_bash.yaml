@@ -6,7 +6,7 @@ on :
   pull_request :
     branches : [ develop]
 env:
-      PROJECT_ROOT: /home/runner/work/Makefile-generation-for-C-and-Cpp-code-compilation-using-Bash    
+      PROJECT_ROOT: home/runner/work/Makefile-generation-for-C-and-Cpp-code-compilation-using-Bash/Makefile-generation-for-C-and-Cpp-code-compilation-using-Bash/    
 
 jobs:
   build:
