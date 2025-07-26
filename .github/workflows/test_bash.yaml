@@ -25,6 +25,13 @@ jobs:
         run: |
           ./generate_makefile_from_bash.sh --path Test/ONE_FILE --compile_file c --coverage y
           ./generate_makefile_from_bash.sh --path Test/MULTIPLE_FILE --compile_file c --coverage y
+          echo "List contents of Test/MULTIPLE_FILE/src:"
+          ls -l Test/MULTIPLE_FILE/src || echo "src not found"
+          echo "--- Show Makefile ---"
+          cat Test/MULTIPLE_FILE/Makefile || echo "Makefile not found"
+          echo "--- Show current directory ---"
+          pwd
+          tree -L 3
           make -C Test/MULTIPLE_FILE clean run 
           make -C Test/ONE_FILE clean run 
 
