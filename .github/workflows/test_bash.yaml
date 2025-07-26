@@ -54,7 +54,14 @@ jobs:
           name: generated-code
           path: ./Test
 
+      - name: Prepare build directories
+        run: |
+          mkdir -p Test/ONE_FILE/build Test/ONE_FILE/coverage_report
+          mkdir -p Test/MULTIPLE_FILE/build Test/MULTIPLE_FILE/coverage_report
+
       - name: Run tests 
         run: |
           make -C Test/ONE_FILE clean run 
           make -C Test/MULTIPLE_FILE clean run
+
+          
