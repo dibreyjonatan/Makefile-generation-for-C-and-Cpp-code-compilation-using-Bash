@@ -16,11 +16,6 @@ jobs:
       - name: Make bash script executable
         run: chmod +x generate_makefile_from_bash.sh
 
-      - name: Install lcov
-        run: |
-          sudo apt update
-          sudo apt install -y lcov
-
   generation_of_makefile:
     needs: setup
     runs-on: ubuntu-latest
@@ -53,6 +48,11 @@ jobs:
         with:
           name: generated-code
           path: ./Test
+    # Added this comment since the pipeline broke because it didnot found lcov 
+      - name: Install lcov
+        run: |
+          sudo apt update
+          sudo apt install -y lcov
 
       - name: Run tests 
         run: |
