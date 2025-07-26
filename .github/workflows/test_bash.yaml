@@ -43,16 +43,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Install lcov
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lcov
+
       - name: Download generated files
         uses: actions/download-artifact@v4
         with:
           name: generated-code
           path: ./Test
-    # Added this comment since the pipeline broke because it didnot found lcov 
-      - name: Install lcov
-        run: |
-          sudo apt update
-          sudo apt install -y lcov
 
       - name: Run tests 
         run: |
