@@ -1,11 +1,10 @@
-name : CI for Testing  bash script
+name: CI for Testing bash script
 
-on :
-  push :
-    branches : [master,develop]
-  pull_request :
-    branches : [ develop]
- 
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [develop]
 
 jobs:
   setup:
@@ -21,32 +20,41 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y lcov
-  
-      - name: Run tests 
-        run: |
-          ./generate_makefile_from_bash.sh --path Test/ONE_FILE --compile_file c --coverage y
-          ./generate_makefile_from_bash.sh --path Test/MULTIPLE_FILE --compile_file c --coverage y
-          echo "List contents of Test/MULTIPLE_FILE/src:"
-          ls -l Test/MULTIPLE_FILE/src || echo "src not found"
-          echo "--- Show Makefile ---"
-          cat Test/MULTIPLE_FILE/Makefile || echo "Makefile not found"
-          echo "--- Show current directory ---"
-          pwd
-          tree -L 6
-          make -C Test/ONE_FILE clean run 
-          make -C Test/MULTIPLE_FILE clean run 
-  generation_of_makefile:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Generation of Makefile
-        run: |
-          ./generate_makefile_from_bash.sh --path Test/ONE_FILE --compile_file c --coverage y
-          ./generate_makefile_from_bash.sh --path Test/MULTIPLE_FILE --compile_file c --coverage y
-  tests:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run tests 
-        run: |
-          make -C Test/ONE_FILE clean run 
-          make -C Test/MULTIPLE_FILE clean run           
 
+  generation_of_makefile:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Generate Makefiles
+        run: |
+          ./generate_makefile_from_bash.sh --path Test/ONE_FILE --compile_file c --coverage y
+          ./generate_makefile_from_bash.sh --path Test/MULTIPLE_FILE --compile_file c --coverage y
+
+      - name: Upload generated Makefiles and sources
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-code
+          path: |
+            Test/ONE_FILE/
+            Test/MULTIPLE_FILE/
+
+  tests:
+    needs: generation_of_makefile
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Download generated files
+        uses: actions/download-artifact@v4
+        with:
+          name: generated-code
+          path: ./Test
+
+      - name: Run tests 
+        run: |
+          make -C Test/ONE_FILE clean run 
+          make -C Test/MULTIPLE_FILE clean run
