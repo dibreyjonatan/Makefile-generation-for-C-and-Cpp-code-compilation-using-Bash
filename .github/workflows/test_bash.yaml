@@ -8,7 +8,7 @@ on :
  
 
 jobs:
-  build:
+  setup:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -21,7 +21,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y lcov
-
+  
       - name: Run tests 
         run: |
           ./generate_makefile_from_bash.sh --path Test/ONE_FILE --compile_file c --coverage y
@@ -35,4 +35,18 @@ jobs:
           tree -L 6
           make -C Test/ONE_FILE clean run 
           make -C Test/MULTIPLE_FILE clean run 
+  generation_of_makefile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generation of Makefile
+        run: |
+          ./generate_makefile_from_bash.sh --path Test/ONE_FILE --compile_file c --coverage y
+          ./generate_makefile_from_bash.sh --path Test/MULTIPLE_FILE --compile_file c --coverage y
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run tests 
+        run: |
+          make -C Test/ONE_FILE clean run 
+          make -C Test/MULTIPLE_FILE clean run           
 
