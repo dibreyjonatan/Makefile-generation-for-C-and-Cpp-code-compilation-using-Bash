@@ -187,6 +187,21 @@ echo -e "\tgenhtml coverage.info --output-directory coverage_report" >>$Makefile
 echo -e "\t@mv *.info \$(BUILD_DIR)" >>$Makefile
 echo -e "\t@mv *.gcda \$(BUILD_DIR)" >>$Makefile
 echo -e "\t@mv *.gcno \$(BUILD_DIR)" >>$Makefile
+#i added this two lines because previously, the .gcda and .gcno files were present with c files, so the cleanning was not effective
+echo -e "\t@find . -path \$(BUILD_DIR) -prune -o -name "*.gcda" -type f -exec mv -t \$(BUILD_DIR) -- {} + > /dev/null 2>&1 || :" >>$Makefile
+echo -e "\t@find . -path \$(BUILD_DIR) -prune -o -name "*.gcno" -type f -exec mv -t \$(BUILD_DIR) -- {} + > /dev/null 2>&1 || : " >> $Makefile
+# Explanations 
+# The -path is to provide a target directory for the prune option
+# The -prune option is to exclude files present in BUILD_DIR since we are making a search in the parent directory
+# The -type f ensures the output is a file and not a directory 
+# The -exec option is to use the shell to do an operation on the result of find
+#let's break down mv -t $(BUILD_DIR) -- {} +
+# -t is to specify the destination of move command 
+# -- is to tell mv that all the following arguements are files 
+# {} it contains the ouput of the find command 
+# +  it means find can accumulate several files before executing mv 
+# > /dev/null 2>&1 To suppress standard outputs and error messages
+# ||: To avoid make to stop if it the command fails
 echo "endif" >> $Makefile
 echo -e "\t@mv \$^ \$(BUILD_DIR)" >> $Makefile
 echo "bin : \$(OBJS)" >> $Makefile
