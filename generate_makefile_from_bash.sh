@@ -123,7 +123,9 @@ else
    esac 
 fi
 
-
+if [ -z $COVERAGE_OPTION ] ; then 
+    echo -n ""   # it means nothing was passed but this echo is present here since we need at least one instruction for if conditional
+else
 if [ $COVERAGE_OPTION == yes  -o $COVERAGE_OPTION == y -o $COVERAGE_OPTION == Y -o $COVERAGE_OPTION == YES ] ; then 
     value=yes 
     condition_flag="-fprofile-arcs -ftest-coverage"
@@ -132,6 +134,7 @@ else
  condition_flag=""
   echo "wrong coverage option, run $0 --help for more info  "
  fi  
+ fi
 ############################################################################################################
 # Generation of Makefile 
 ############################################################################################################
