@@ -167,7 +167,10 @@ echo "COVERAGE=$value" >> $Makefile
 echo "BUILD_DIR=build" >> $Makefile
 #object sources 
 OBJ_SRC="${array[@]}"
-echo "OBJS_SRC=$OBJ_SRC" >> $Makefile
+# This line was modify in order to have the relative path of the c files with respect to the parent directory 
+# So as to enable CI 
+# tr is a linux command that stands for transform , it will transform '\n' to ' ' so that all c files will be on thesame line
+echo "OBJS_SRC=$(realpath --relative-to="$PROJECT_PATH" $OBJ_SRC | tr '\n' ' ')" >> $Makefile
 echo "OBJS=\$(patsubst %.c, %.o , \$(OBJS_SRC))" >> $Makefile #put \ before $ enables us to suppress it and echo it in the file 
 ##check wether a target is passed or not
 echo "ifeq (\$(MAKECMDGOALS),)" >> $Makefile

@@ -5,8 +5,7 @@ on :
     branches : [master,develop]
   pull_request :
     branches : [ develop]
-env:
-      PROJECT_ROOT: home/runner/work/Makefile-generation-for-C-and-Cpp-code-compilation-using-Bash/Makefile-generation-for-C-and-Cpp-code-compilation-using-Bash/    
+ 
 
 jobs:
   build:
@@ -25,8 +24,8 @@ jobs:
 
       - name: Run tests 
         run: |
-          ./generate_makefile_from_bash.sh --path $PROJECT_ROOT/Test/ONE_FILE --compile_file c --coverage y
-          ./generate_makefile_from_bash.sh --path $PROJECT_ROOT/Test/MULTIPLE_FILE --compile_file c --coverage y
+          ./generate_makefile_from_bash.sh --path Test/ONE_FILE --compile_file c --coverage y
+          ./generate_makefile_from_bash.sh --path Test/MULTIPLE_FILE --compile_file c --coverage y
           echo "List contents of Test/MULTIPLE_FILE/src:"
           ls -l Test/MULTIPLE_FILE/src || echo "src not found"
           echo "--- Show Makefile ---"
@@ -35,5 +34,5 @@ jobs:
           pwd
           tree -L 6
           make -C Test/ONE_FILE clean run 
-
+          make -C Test/MULTIPLE_FILE clean run 
 
