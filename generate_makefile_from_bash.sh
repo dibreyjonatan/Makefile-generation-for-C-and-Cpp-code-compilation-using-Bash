@@ -82,7 +82,12 @@ done
 # verify wether there are from thesame source or are from different sources 
 if [ $count -eq 0 ] ; then 
    echo $count "All the files are from thesame repository"
-   c_flag="-Wall  -Werror -Wextra -std=c11"
+   #Precsing compilation flags with respect to code 
+   if [ "$COMPILE_FILE" == "c" ] ; then 
+  c_flag="-Wall  -Werror -Wextra -std=c11"
+ elif [ "$COMPILE_FILE" == "cpp" ] ; then 
+  c_flag="-Wall -Wextra -Werror -pedantic -std=c++20 "
+      fi 
 else 
    echo "There are $count sub folders containing the C files"  
    include_folder=() 
@@ -92,7 +97,11 @@ done < <(find $PROJECT_PATH -name "*.h" -print0)
    #to obtain the name of the directory inwhich there are .h files
     i_path=$(basename $(dirname $(realpath "${include_folder[@]}")))
     echo $i_path
-    c_flag="-Wall -Werror -Wextra -std=c11 -I$i_path"
+    if [ "$COMPILE_FILE" == "c" ] ; then 
+  c_flag="-Wall  -Werror -Wextra -std=c11 -I$i_path"
+ elif [ "$COMPILE_FILE" == "cpp" ] ; then 
+  c_flag="-Wall -Wextra -Werror -pedantic -std=c++20 -I$i_path"
+      fi 
 fi 
 
 ### recherchons s'il existe un Makefile déjà présent et si oui on demande à l'utilisateur s'il desire généré un nouveau makefile ou le conserver
@@ -211,8 +220,14 @@ OBJ_SRC="${array[@]}"
 # So as to enable CI 
 # tr is a linux command that stands for transform , it will transform '\n' to ' ' so that all c files will be on thesame line
 echo "OBJS_SRC=$(realpath --relative-to="$PROJECT_PATH" $OBJ_SRC | tr '\n' ' ')" >> $Makefile
-echo "OBJS=\$(patsubst %.c, %.o , \$(OBJS_SRC))" >> $Makefile #put \ before $ enables us to suppress it and echo it in the file 
+
+ if [ "$COMPILE_FILE" == "c" ] ; then
+echo "OBJS=\$(patsubst %.c, %.o , \$(OBJS_SRC))" >> $Makefile 
+#put \ before $ enables us to suppress it and echo it in the file 
 ##check wether a target is passed or not
+elif [ "$COMPILE_FILE" == "cpp" ] ; then
+echo "OBJS=\$(patsubst %.cpp, %.o , \$(OBJS_SRC))" >> $Makefile
+fi
 echo "ifeq (\$(MAKECMDGOALS),)" >> $Makefile
 echo "\$(error \"error please pass a target, either clean or and run\")" >> $Makefile
 
@@ -270,8 +285,14 @@ fi
 echo -e "\t@mv \$^ \$(BUILD_DIR)" >> $Makefile
 echo "bin : \$(OBJS)" >> $Makefile
 echo -e "\t\$(CC) \$(CFLAG) $^ -o \$(BIN)" >> $Makefile
+# if [ "$COMPILE_FILE" == "c" ] ; then
 echo -e "\t@mv \$^ \$(BUILD_DIR)" >> $Makefile 
+#fi
+ if [ "$COMPILE_FILE" == "c" ] ; then
 echo "%.o : %.c" >> $Makefile
+elif [ "$COMPILE_FILE" == "cpp" ] ; then 
+echo "%.o : %.cpp" >> $Makefile
+fi
 echo -e "\t\$(CC) -c \$(CFLAG)  $^ -o \$@" >> $Makefile 
 echo "generation done.................................."
 echo -n "To run the makefile use this command "
