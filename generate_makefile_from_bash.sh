@@ -40,10 +40,10 @@ if [ -z $PROJECT_PATH ] ; then  # the -z option means that the length of string 
  exit 1 
 fi
 
-if [ $COMPILE_FILE == "c" ] ; then 
+if [ "$COMPILE_FILE" == "c" ] ; then 
  CC=gcc 
  
- elif [ $COMPILE_FILE == "cpp" ] ; then 
+ elif [ "$COMPILE_FILE" == "cpp" ] ; then 
   CC=g++ 
   else 
       echo "error in the source code to compile "
@@ -126,7 +126,7 @@ fi
 if [ -z $COVERAGE_OPTION ] ; then 
     echo -n ""   # it means nothing was passed but this echo is present here since we need at least one instruction for if conditional
 else
-if [ $COVERAGE_OPTION == yes  -o $COVERAGE_OPTION == y -o $COVERAGE_OPTION == Y -o $COVERAGE_OPTION == YES ] ; then 
+if [ "$COVERAGE_OPTION" == "yes"  -o "$COVERAGE_OPTION" == "y" -o "$COVERAGE_OPTION" == "Y" -o "$COVERAGE_OPTION" == "YES" ] ; then 
     value=yes 
     condition_flag="-fprofile-arcs -ftest-coverage"
 
@@ -147,12 +147,12 @@ SANITIZER_OPTION=""
   echo " You can choose either Valgrind or Sanitizer"
   echo -n "Will you add Valgrind to your makefile ? (y/n) : "
   read ans 
-  if [ $ans == "y" -o $ans == "yes" -o $ans == "YES" ] ; then 
+  if [ "$ans" == "y" -o "$ans" == "yes" -o "$ans" == "YES" ] ; then 
     VALGRIND_OPTION="y"
   else 
     echo -n "Will you add SANITIZER to your makefile ? (y/n) : "
     read ans 
-    if [ $ans == "y" -o $ans == "yes" -o $ans == "YES" ] ; then 
+    if [ "$ans" == "y" -o "$ans" == "yes" -o "$ans" == "YES" ] ; then 
       SANITIZER_OPTION="y"
     fi
   fi  
