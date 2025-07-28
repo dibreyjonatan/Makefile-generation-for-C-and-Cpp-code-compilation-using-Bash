@@ -25,16 +25,20 @@ jobs:
 
       - name: Generate Makefiles
         run: |
-         printf "yes\nyes\nyes\n"  | ./generate_makefile_from_bash.sh --path Test/ONE_FILE --compile_file c --coverage y
-         printf "yes\nyes\nyes\n" | ./generate_makefile_from_bash.sh --path Test/MULTIPLE_FILE --compile_file c --coverage y
-
+         printf "yes\nyes\nyes\n"  | ./generate_makefile_from_bash.sh --path Test/C_ONE_FILE --compile_file c --coverage y
+         printf "yes\nyes\nyes\n" | ./generate_makefile_from_bash.sh --path Test/C_MULTIPLE_FILE --compile_file c --coverage y
+         printf "yes\nyes\nyes\n"  | ./generate_makefile_from_bash.sh --path Test/CPP_ONE_FILE --compile_file cpp --coverage y
+         printf "yes\nyes\nno\nyes\n" | ./generate_makefile_from_bash.sh --path Test/CPP_MULTIPLE_FILE --compile_file cpp --coverage y 
+        # printf is to inject answers to the bash scripts during CI 
       - name: Upload generated Makefiles and sources
         uses: actions/upload-artifact@v4
         with:
           name: generated-code
           path: |
-            Test/ONE_FILE/
-            Test/MULTIPLE_FILE/
+            Test/C_ONE_FILE/
+            Test/C_MULTIPLE_FILE/
+            Test/CPP_ONE_FILE/
+            Test/CPP_MULTIPLE_FILE/
 
   tests:
     needs: generation_of_makefile
@@ -57,12 +61,16 @@ jobs:
 
       - name: Prepare build directories
         run: |
-          mkdir -p Test/ONE_FILE/build Test/ONE_FILE/coverage_report
-          mkdir -p Test/MULTIPLE_FILE/build Test/MULTIPLE_FILE/coverage_report
+          mkdir -p Test/C_ONE_FILE/build Test/C_ONE_FILE/coverage_report
+          mkdir -p Test/C_MULTIPLE_FILE/build Test/C_MULTIPLE_FILE/coverage_report
+          mkdir -p Test/CPP_ONE_FILE/build Test/CPP_ONE_FILE/coverage_report
+          mkdir -p Test/CPP_MULTIPLE_FILE/build Test/CPP_MULTIPLE_FILE/coverage_report
 
       - name: Run tests 
         run: |
-          make -C Test/ONE_FILE clean run 
-          make -C Test/MULTIPLE_FILE clean run
+          make -C Test/C_ONE_FILE clean run 
+          make -C Test/C_MULTIPLE_FILE clean run
+          make -C Test/CPP_ONE_FILE clean run 
+          make -C Test/CPP_MULTIPLE_FILE clean run
 
           
