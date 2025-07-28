@@ -1,0 +1,76 @@
+name: CI for Testing bash script
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Make bash script executable
+        run: chmod +x generate_makefile_from_bash.sh
+
+  generation_of_makefile:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Generate Makefiles
+        run: |
+         printf "yes\nyes\nyes\n"  | ./generate_makefile_from_bash.sh --path Test/C_ONE_FILE --compile_file c --coverage y
+         printf "yes\nyes\nyes\n" | ./generate_makefile_from_bash.sh --path Test/C_MULTIPLE_FILE --compile_file c --coverage y
+         printf "yes\nyes\nyes\n"  | ./generate_makefile_from_bash.sh --path Test/CPP_ONE_FILE --compile_file cpp --coverage y
+         printf "yes\nyes\nno\nyes\n" | ./generate_makefile_from_bash.sh --path Test/CPP_MULTIPLE_FILE --compile_file cpp --coverage y 
+        # printf is to inject answers to the bash scripts during CI 
+      - name: Upload generated Makefiles and sources
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-code
+          path: |
+            Test/C_ONE_FILE/
+            Test/C_MULTIPLE_FILE/
+            Test/CPP_ONE_FILE/
+            Test/CPP_MULTIPLE_FILE/
+
+  tests:
+    needs: generation_of_makefile
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install lcov
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lcov
+          sudo apt-get install valgrind
+
+      - name: Download generated files
+        uses: actions/download-artifact@v4
+        with:
+          name: generated-code
+          path: ./Test
+
+      - name: Prepare build directories
+        run: |
+          mkdir -p Test/C_ONE_FILE/build Test/C_ONE_FILE/coverage_report
+          mkdir -p Test/C_MULTIPLE_FILE/build Test/C_MULTIPLE_FILE/coverage_report
+          mkdir -p Test/CPP_ONE_FILE/build Test/CPP_ONE_FILE/coverage_report
+          mkdir -p Test/CPP_MULTIPLE_FILE/build Test/CPP_MULTIPLE_FILE/coverage_report
+
+      - name: Run tests 
+        run: |
+          make -C Test/C_ONE_FILE clean run 
+          make -C Test/C_MULTIPLE_FILE clean run
+          make -C Test/CPP_ONE_FILE clean run 
+          make -C Test/CPP_MULTIPLE_FILE clean run
+
+          
