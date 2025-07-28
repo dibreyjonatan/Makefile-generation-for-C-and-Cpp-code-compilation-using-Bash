@@ -82,7 +82,7 @@ done
 # verify wether there are from thesame source or are from different sources 
 if [ $count -eq 0 ] ; then 
    echo $count "All the files are from thesame repository"
-   c_flag="-Wall  -g -Werror -Wextra -std=c11"
+   c_flag="-Wall  -Werror -Wextra -std=c11"
 else 
    echo "There are $count sub folders containing the C files"  
    include_folder=() 
@@ -92,7 +92,7 @@ done < <(find $PROJECT_PATH -name "*.h" -print0)
    #to obtain the name of the directory inwhich there are .h files
     i_path=$(basename $(dirname $(realpath "${include_folder[@]}")))
     echo $i_path
-    c_flag="-Wall -g -Werror -Wextra -std=c11 -I$i_path"
+    c_flag="-Wall -Werror -Wextra -std=c11 -I$i_path"
 fi 
 
 ### recherchons s'il existe un Makefile déjà présent et si oui on demande à l'utilisateur s'il desire généré un nouveau makefile ou le conserver
@@ -135,15 +135,54 @@ else
   echo "wrong coverage option, run $0 --help for more info  "
  fi  
  fi
+#####################################################################################################
+# Adding Dynamique Analysis in  the Makefile
+#####################################################################################################
+VALGRIND_OPTION=""
+SANITIZER_OPTION=""
+ echo -n "Would you like to add dynamique analysis to your makefile ? (y/n ) : " 
+  read  ans 
+  case $ans in 
+  [Yy] | [Yy][eE][sS] ) # to test either y or Y or yes or YES or Yes or yEs or yeS or YeS or yES or YEs
+  echo " You can choose either Valgrind or Sanitizer"
+  echo -n "Will you add Valgrind to your makefile ? (y/n) : "
+  read ans 
+  if [ $ans == "y" -o $ans == "yes" -o $ans == "YES" ] ; then 
+    VALGRIND_OPTION="y"
+  else 
+    echo -n "Will you add SANITIZER to your makefile ? (y/n) : "
+    read ans 
+    if [ $ans == "y" -o $ans == "yes" -o $ans == "YES" ] ; then 
+      SANITIZER_OPTION="y"
+    fi
+  fi  
+  ;;
+  [Nn] | [Nn][Oo] ) 
+  echo "No dynamique analysis will be added to the project"
+  ;;
+  *) 
+  echo "Please either put y/n or yes/no " 
+   exit 1 ;;
+   esac 
 ############################################################################################################
 # Generation of Makefile 
 ############################################################################################################
 # compiler 
+# a valgrind variable that will take yes if it is used
 echo "#This Makefile was automatically generated using $0" >> $Makefile
 echo "#For any problem report bug by opening an issue in the github project">> $Makefile
 echo "CC=$CC" >> $Makefile
+echo "VALGRIND_OPTION=$VALGRIND_OPTION">> $Makefile 
 # cflags
-echo "CFLAG=$c_flag $condition_flag" >> $Makefile 
+if [  ${#VALGRIND_OPTION} -ne 0 ] ; then 
+echo "CFLAG=$c_flag $condition_flag -g" >> $Makefile 
+else 
+ if [ ${#SANITIZER_OPTION} -ne 0 ] ; then 
+echo "CFLAG=$c_flag $condition_flag -fsanitize=address,undefined -fno-omit-frame-pointer -g" >> $Makefile  
+ else 
+ echo "CFLAG=$c_flag $condition_flag" >> $Makefile 
+fi
+fi
 #build path
 build="$PROJECT_PATH/build"
 #checks if the repo exists using the -d flag 
@@ -165,6 +204,7 @@ fi
    
 echo "COVERAGE=$value" >> $Makefile 
 echo "BUILD_DIR=build" >> $Makefile
+echo "BIN = bin" >> $Makefile
 #object sources 
 OBJ_SRC="${array[@]}"
 # This line was modify in order to have the relative path of the c files with respect to the parent directory 
@@ -181,15 +221,35 @@ echo ".PHONY: clean run" >> $Makefile
 
 echo "clean :" >> $Makefile 
 echo -e "\trm build/* ||:" >> $Makefile
+
+if [  ${#value} -ne 0 ] ; then 
+ 
 echo -e "\trm -r coverage_report ||:" >> $Makefile
+fi
+if [  ${#VALGRIND_OPTION} -ne 0 ] ; then
+echo -e "\trm valgrind.log ||:" >> $Makefile
+fi
+
 echo "run :bin " >> $Makefile 
-echo -e "\t./$^ " >> $Makefile 
-echo "ifeq (\$(COVERAGE),yes)" >> $Makefile
-echo -e "\tlcov --directory . --capture --output-file coverage.info" >>$Makefile
-echo -e "\tgenhtml coverage.info --output-directory coverage_report" >>$Makefile
-echo -e "\t@mv *.info \$(BUILD_DIR)" >>$Makefile
-echo -e "\t@mv *.gcda \$(BUILD_DIR)" >>$Makefile
-echo -e "\t@mv *.gcno \$(BUILD_DIR)" >>$Makefile
+if [ ${#VALGRIND_OPTION} -ne 0 ] ; then 
+echo -e "\t@if [ \$(VALGRIND_OPTION) = y ] ; then \\" >> $Makefile
+# the \\ in the line below is to enable \ in the makefile 
+echo -e "\tvalgrind --leak-check=full --show-leak-kinds=all  --track-origins=yes --log-file=valgrind.log  ./\$(BIN); \\" >>$Makefile
+echo -e "\telse \\" >> $Makefile
+echo -e "\t\t./\$(BIN); \\" >> $Makefile  
+echo -e "\tfi" >> $Makefile
+else 
+echo -e "\t./\$(BIN)" >> $Makefile 
+fi
+
+if [  ${#value} -ne 0 ] ; then 
+echo  -e "\t@if [ \$(COVERAGE) = yes ] ; then \\" >> $Makefile
+echo -e "\tlcov --directory . --capture --output-file coverage.info; \\" >>$Makefile
+echo -e "\tgenhtml coverage.info --output-directory coverage_report; \\" >>$Makefile
+echo -e "\tmv coverage.info \$(BUILD_DIR); \\" >> $Makefile
+echo -e "\tfi" >> $Makefile
+echo -e "\t@mv *.gcda \$(BUILD_DIR) || :" >>$Makefile
+echo -e "\t@mv *.gcno \$(BUILD_DIR) || :" >>$Makefile
 #i added this two lines because previously, the .gcda and .gcno files were present with c files, so the cleanning was not effective
 echo -e "\t@find . -path \$(BUILD_DIR) -prune -o -name "*.gcda" -type f -exec mv -t \$(BUILD_DIR) -- {} + > /dev/null 2>&1 || :" >>$Makefile
 echo -e "\t@find . -path \$(BUILD_DIR) -prune -o -name "*.gcno" -type f -exec mv -t \$(BUILD_DIR) -- {} + > /dev/null 2>&1 || : " >> $Makefile
@@ -205,10 +265,11 @@ echo -e "\t@find . -path \$(BUILD_DIR) -prune -o -name "*.gcno" -type f -exec mv
 # +  it means find can accumulate several files before executing mv 
 # > /dev/null 2>&1 To suppress standard outputs and error messages
 # ||: To avoid make to stop if it the command fails
-echo "endif" >> $Makefile
+
+fi
 echo -e "\t@mv \$^ \$(BUILD_DIR)" >> $Makefile
 echo "bin : \$(OBJS)" >> $Makefile
-echo -e "\t\$(CC) \$(CFLAG) $^ -o \$@" >> $Makefile
+echo -e "\t\$(CC) \$(CFLAG) $^ -o \$(BIN)" >> $Makefile
 echo -e "\t@mv \$^ \$(BUILD_DIR)" >> $Makefile 
 echo "%.o : %.c" >> $Makefile
 echo -e "\t\$(CC) -c \$(CFLAG)  $^ -o \$@" >> $Makefile 
