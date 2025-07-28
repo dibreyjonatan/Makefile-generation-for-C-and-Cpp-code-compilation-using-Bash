@@ -25,8 +25,8 @@ jobs:
 
       - name: Generate Makefiles
         run: |
-         echo y | ./generate_makefile_from_bash.sh --path Test/ONE_FILE --compile_file c --coverage y
-         echo y | ./generate_makefile_from_bash.sh --path Test/MULTIPLE_FILE --compile_file c --coverage y
+         echo "yes" | ./generate_makefile_from_bash.sh --path Test/ONE_FILE --compile_file c --coverage y
+         echo "yes" | ./generate_makefile_from_bash.sh --path Test/MULTIPLE_FILE --compile_file c --coverage y
 
       - name: Upload generated Makefiles and sources
         uses: actions/upload-artifact@v4
