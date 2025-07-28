@@ -1,4 +1,4 @@
-#include "math.h"
+#include "my_math.h"
 
 
 void even_odd(int a){

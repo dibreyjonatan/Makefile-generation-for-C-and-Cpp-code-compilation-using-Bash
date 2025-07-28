@@ -1,5 +1,5 @@
 #include "utils.h"
-#include "math.h"
+#include "my_math.h"
 
 int main(){
     message();
