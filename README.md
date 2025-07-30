@@ -25,7 +25,7 @@ use the tree command. You can run script on the Test example provided to have a 
 1. Clone the project 
 ```
 cd ~
-git clone https://github.com/dibreyjonatan/Makefile-generation-for-C-and-Cpp-code-compilation-using-Bash.git
+git clone --recurse-submodules https://github.com/dibreyjonatan/Makefile-generation-for-C-and-Cpp-code-compilation-using-Bash.git
 
 cd Makefile-generation-for-C-and-Cpp-code-compilation-using-Bash
 
