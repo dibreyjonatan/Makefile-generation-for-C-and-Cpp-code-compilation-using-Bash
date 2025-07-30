@@ -21,7 +21,7 @@ sudo apt install valgrind
 ## How to use this project ? 
 Overview 
 > * Look at the directory structure supported for now in the Test folder 
-use the tree command 
+use the tree command. You can run script on the Test example provided to have a better idea of the project before implementing it in your project.
 1. Clone the project 
 ```
 cd ~
