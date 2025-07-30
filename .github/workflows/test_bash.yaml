@@ -29,7 +29,10 @@ jobs:
          printf "yes\nyes\nyes\n" | ./generate_makefile_from_bash.sh --path Test/C_MULTIPLE_FILE --compile_file c --coverage y
          printf "yes\nyes\nyes\n"  | ./generate_makefile_from_bash.sh --path Test/CPP_ONE_FILE --compile_file cpp --coverage y
          printf "yes\nyes\nno\nyes\n" | ./generate_makefile_from_bash.sh --path Test/CPP_MULTIPLE_FILE --compile_file cpp --coverage y 
+         git submodule init && git submodule update 
+         printf "yes\nyes\nyes\n" | ./generate_makefile_from_bash.sh --path Test/C_unit_test --compile_file c --coverage y 
         # printf is to inject answers to the bash scripts during CI 
+        # submodule initialisation and update  
       - name: Upload generated Makefiles and sources
         uses: actions/upload-artifact@v4
         with:
@@ -39,6 +42,7 @@ jobs:
             Test/C_MULTIPLE_FILE/
             Test/CPP_ONE_FILE/
             Test/CPP_MULTIPLE_FILE/
+            Test/C_unit_test/
 
   tests:
     needs: generation_of_makefile
@@ -65,6 +69,7 @@ jobs:
           mkdir -p Test/C_MULTIPLE_FILE/build Test/C_MULTIPLE_FILE/coverage_report
           mkdir -p Test/CPP_ONE_FILE/build Test/CPP_ONE_FILE/coverage_report
           mkdir -p Test/CPP_MULTIPLE_FILE/build Test/CPP_MULTIPLE_FILE/coverage_report
+          mkdir -p Test/C_unit_test/build Test/C_unit_test/coverage_report
 
       - name: Run tests 
         run: |
@@ -72,5 +77,4 @@ jobs:
           make -C Test/C_MULTIPLE_FILE clean run
           make -C Test/CPP_ONE_FILE clean run 
           make -C Test/CPP_MULTIPLE_FILE clean run
-
-          
+          make -C Test/C_unit_test clean run
