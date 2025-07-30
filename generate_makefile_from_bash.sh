@@ -95,13 +95,27 @@ else
       include_folder+=("$REPLY")
 done < <(find $PROJECT_PATH -name "*.h" -print0) 
    #to obtain the name of the directory inwhich there are .h files
-    i_path=$(basename $(dirname $(realpath "${include_folder[@]}")))
-    echo $i_path
-    if [ "$COMPILE_FILE" == "c" ] ; then 
+   unity=""
+   i_path=""
+   for i in "${include_folder[@]}";
+do 
+   if [[ "$i" =~ "Unity" ]] && [[ -z  "$unity"  ]]; then
+  echo "Unity sub folder found"
+  unity="Unity/src"
+  else 
+   i_path=$(basename $(dirname $(realpath "$i")))
+fi
+done
+   #creation of c_flag
+     if [ "$COMPILE_FILE" == "c" ] ; then 
+     if [[ -n "$unity" ]] ; then
+       c_flag="-Wall  -Werror -Wextra -std=c11 -I$i_path -I$unity"
+     else
   c_flag="-Wall  -Werror -Wextra -std=c11 -I$i_path"
+  fi
  elif [ "$COMPILE_FILE" == "cpp" ] ; then 
   c_flag="-Wall -Wextra -Werror -pedantic -std=c++20 -I$i_path"
-      fi 
+     fi 
 fi 
 
 ### recherchons s'il existe un Makefile déjà présent et si oui on demande à l'utilisateur s'il desire généré un nouveau makefile ou le conserver
@@ -215,11 +229,26 @@ echo "COVERAGE=$value" >> $Makefile
 echo "BUILD_DIR=build" >> $Makefile
 echo "BIN = bin" >> $Makefile
 #object sources 
-OBJ_SRC="${array[@]}"
+# To take only that desired file
+OBJ_SRC=()
+ for i in "${array[@]}" ;
+ do
+  if [[ "$i" =~ "Unity/src/unity.c" ]] ; then  # =~ is to search for correspondance or Unity/src/unity.c in "$i" 
+  OBJ_SRC+=("$i")
+  fi
+ done
+ #echo "${OBJ_SRC[@]}"
+ #to search all C files except those found in unity folder
+ # I am searching again c files but this time i am excluding Unity folder"
+ while IFS= read -r -d $'\0'  ; do 
+      OBJ_SRC+=("$REPLY") 
+done < <(find $PROJECT_PATH -type d -name 'Unity' -prune -false -o -name "*.$COMPILE_FILE" -print0) 
+echo "${OBJ_SRC[@]}"
+#echo "${OBJ_SRC[@]}"
 # This line was modify in order to have the relative path of the c files with respect to the parent directory 
 # So as to enable CI 
 # tr is a linux command that stands for transform , it will transform '\n' to ' ' so that all c files will be on thesame line
-echo "OBJS_SRC=$(realpath --relative-to="$PROJECT_PATH" $OBJ_SRC | tr '\n' ' ')" >> $Makefile
+echo "OBJS_SRC=$(realpath --relative-to="$PROJECT_PATH" "${OBJ_SRC[@]}" | tr '\n' ' ')" >> $Makefile
 
  if [ "$COMPILE_FILE" == "c" ] ; then
 echo "OBJS=\$(patsubst %.c, %.o , \$(OBJS_SRC))" >> $Makefile 
