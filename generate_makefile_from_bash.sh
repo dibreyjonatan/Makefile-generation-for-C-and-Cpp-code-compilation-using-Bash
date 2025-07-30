@@ -106,10 +106,26 @@ do
    i_path=$(basename $(dirname $(realpath "$i")))
 fi
 done
+# The goal here is to do a second search where Unity is totally excluded
+include_folder=() 
+   while IFS= read -r -d $'\0'  ; do 
+      include_folder+=("$REPLY")
+done < <(find $PROJECT_PATH -type d -name 'Unity' -prune -false -o -name "*.h" -print0) 
    #creation of c_flag
      if [ "$COMPILE_FILE" == "c" ] ; then 
      if [[ -n "$unity" ]] ; then
+      if [[ "${#include_folder[@]}" -eq "1" ]] ; then 
+      i_path=$(basename $(dirname $(realpath "${include_folder[0]}")))
        c_flag="-Wall  -Werror -Wextra -std=c11 -I$i_path -I$unity"
+      else 
+        i_path=""
+        for i in "${include_folder[@]}";
+           do 
+         i_path+="-I$(basename $(dirname $(realpath "$i")))"  
+         i_path+=" "
+         done 
+	 c_flag="-Wall  -Werror -Wextra -std=c11 $i_path -I$unity"
+       fi
      else
   c_flag="-Wall  -Werror -Wextra -std=c11 -I$i_path"
   fi
@@ -124,10 +140,10 @@ Makefile="$PROJECT_PATH/Makefile"
 makefile_file=() 
    while IFS= read -r -d $'\0'  ; do 
       makefile_file+=("$REPLY")
-done < <(find $PROJECT_PATH -name "Makefile" -print0) 
+done < <(find $PROJECT_PATH -type d -name 'Unity' -prune -false -o -name  "Makefile" -print0) #because Unity contains Makefiles, the goal is to make a search everywhere except there
 #test if a makefile exists
 if [ ${#makefile_file[@]} -eq 0 ]  ; then 
-echo " No Makefile exists we are going to generate on.............."
+echo " No Makefile exists we are going to generate one ........................"
 touch $Makefile 
 else 
   echo -n "Would you like to generate a new  Makefile ? : " # -n prevents echo to print a new line  
@@ -214,7 +230,7 @@ build="$PROJECT_PATH/build"
    listing=$(ls $build ) # to get the output of list
    if [  ${#listing} -eq 0 ] ; then  #did corrections as string was too large,so i did comparaison of length to 0 by auto calculating the length
                                      # but in the previous commits, the string length was compared to 0 which cause bugs as build list increases in size.
-   echo "repo is empty no no need of cleaning"
+   echo "$build is empty no need of cleaning"
    else
    echo " The following files of $build will be deleted : $listing "
    echo "cleaning of it content............"
@@ -243,7 +259,7 @@ OBJ_SRC=()
  while IFS= read -r -d $'\0'  ; do 
       OBJ_SRC+=("$REPLY") 
 done < <(find $PROJECT_PATH -type d -name 'Unity' -prune -false -o -name "*.$COMPILE_FILE" -print0) 
-echo "${OBJ_SRC[@]}"
+
 #echo "${OBJ_SRC[@]}"
 # This line was modify in order to have the relative path of the c files with respect to the parent directory 
 # So as to enable CI 
