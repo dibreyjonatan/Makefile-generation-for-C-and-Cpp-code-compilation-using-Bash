@@ -35,7 +35,7 @@ cd Makefile-generation-for-C-and-Cpp-code-compilation-using-Bash
 chmod +x generate_makefile_from_bash.sh
 ```
 3. Copy the path of the folder where you want to generate the Makefile
- 
+> Please provide absolute path to the directory 
  ```
  export PATH=~/C/path_to_dir
  ./generate_makefile_from_bash.sh --path $(PATH) --compile_file c
