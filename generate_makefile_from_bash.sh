@@ -89,12 +89,13 @@ if [ $count -eq 0 ] ; then
   c_flag="-Wall -Wextra -Werror -pedantic -std=c++20 "
       fi 
 else 
-   echo "There are $count sub folders containing the C files"  
+   echo "There are $count sub folders containing the $COMPILE_FILE files"  
    include_folder=() 
    while IFS= read -r -d $'\0'  ; do 
       include_folder+=("$REPLY")
 done < <(find $PROJECT_PATH -name "*.h" -print0) 
    #to obtain the name of the directory inwhich there are .h files
+if [[ "$COMPILE_FILE" == "c" ]] ; then    
    unity=""
    i_path=""
    for i in "${include_folder[@]}";
@@ -111,6 +112,26 @@ include_folder=()
    while IFS= read -r -d $'\0'  ; do 
       include_folder+=("$REPLY")
 done < <(find $PROJECT_PATH -type d -name 'Unity' -prune -false -o -name "*.h" -print0) 
+fi
+
+if [[ "$COMPILE_FILE" == "cpp" ]] ; then 
+ googletest=""
+   for i in "${include_folder[@]}";
+do 
+   if [[ "$i" =~ "googletest" ]] && [[ -z  "$googletest"  ]]; then
+  echo "google folder found"
+  googletest="true"
+  else 
+   i_path=$(basename $(dirname $(realpath "$i")))
+fi
+done 
+# The goal here is to do a second search where Unity is totally excluded
+include_folder=() 
+   while IFS= read -r -d $'\0'  ; do 
+      include_folder+=("$REPLY")
+done < <(find $PROJECT_PATH -type d -name 'googletest' -prune -false -o -name "*.h" -print0) 
+
+fi
    #creation of c_flag
      if [ "$COMPILE_FILE" == "c" ] ; then 
      if [[ -n "$unity" ]] ; then
@@ -131,6 +152,24 @@ done < <(find $PROJECT_PATH -type d -name 'Unity' -prune -false -o -name "*.h" -
   fi
  elif [ "$COMPILE_FILE" == "cpp" ] ; then 
   c_flag="-Wall -Wextra -Werror -pedantic -std=c++20 -I$i_path"
+  googletest="-I googletest/googletest/include "
+  if [[ -n "$googletest" ]] ; then
+      if [[ "${#include_folder[@]}" -eq "1" ]] ; then 
+      i_path=$(basename $(dirname $(realpath "${include_folder[0]}")))
+       c_flag=" -Wall -Wextra -Werror -pedantic -std=c++20 -I$i_path $googletest"
+      else 
+        i_path=""
+        for i in "${include_folder[@]}";
+           do 
+         i_path+="-I$(basename $(dirname $(realpath "$i")))"  
+         i_path+=" "
+         done 
+	 c_flag="-Wall -Wextra -Werror -pedantic -std=c++20  $i_path $googletest"
+       fi
+     else
+  c_flag="-Wall -Wextra -Werror -pedantic -std=c++20  -I$i_path"
+  fi
+  
      fi 
 fi 
 
@@ -140,7 +179,7 @@ Makefile="$PROJECT_PATH/Makefile"
 makefile_file=() 
    while IFS= read -r -d $'\0'  ; do 
       makefile_file+=("$REPLY")
-done < <(find $PROJECT_PATH -type d -name 'Unity' -prune -false -o -name  "Makefile" -print0) #because Unity contains Makefiles, the goal is to make a search everywhere except there
+done < <(find $PROJECT_PATH -type d \( -name 'Unity' -o -name 'googletest' \) -prune -false -o -name  "Makefile" -print0) #because Unity contains Makefiles, the goal is to make a search everywhere except there
 #test if a makefile exists
 if [ ${#makefile_file[@]} -eq 0 ]  ; then 
 echo " No Makefile exists we are going to generate one ........................"
@@ -234,7 +273,11 @@ build="$PROJECT_PATH/build"
    else
    echo " The following files of $build will be deleted : $listing "
    echo "cleaning of it content............"
+   if [ -z "$googletest" ] ; then 
    rm $build/* 
+   else
+    rm -r $build/*
+   fi
    echo "cleaning done, $build is empty"
    fi
  else 
@@ -258,7 +301,7 @@ OBJ_SRC=()
  # I am searching again c files but this time i am excluding Unity folder"
  while IFS= read -r -d $'\0'  ; do 
       OBJ_SRC+=("$REPLY") 
-done < <(find $PROJECT_PATH -type d -name 'Unity' -prune -false -o -name "*.$COMPILE_FILE" -print0) 
+done < <(find $PROJECT_PATH -type d \( -name 'Unity' -o -name 'googletest' \) -prune -false -o -name "*.$COMPILE_FILE" -print0) 
 
 #echo "${OBJ_SRC[@]}"
 # This line was modify in order to have the relative path of the c files with respect to the parent directory 
@@ -280,8 +323,11 @@ echo "endif" >> $Makefile
 echo ".PHONY: clean run" >> $Makefile 
 
 echo "clean :" >> $Makefile 
+if [ -z "$googletest" ] ; then
 echo -e "\trm build/* ||:" >> $Makefile
-
+else 
+echo -e "\trm -r build/* ||:" >> $Makefile
+fi
 if [  ${#value} -ne 0 ] ; then 
  
 echo -e "\trm -r coverage_report ||:" >> $Makefile
@@ -329,7 +375,12 @@ echo -e "\t@find . -path \$(BUILD_DIR) -prune -o -name "*.gcno" -type f -exec mv
 fi
 echo -e "\t@mv \$^ \$(BUILD_DIR)" >> $Makefile
 echo "bin : \$(OBJS)" >> $Makefile
+if [ "$COMPILE_FILE"=="cpp" ] && [ -n "$googletest" ] ; then   # this is to link all the objects created
+LINK_LIBS=" -Lgoogletest/build/lib -lgtest_main -lgtest -lpthread"
+ echo -e "\t\$(CC) \$(CFLAG) $^ -o  \$(BIN) $LINK_LIBS" >> $Makefile
+else
 echo -e "\t\$(CC) \$(CFLAG) $^ -o \$(BIN)" >> $Makefile
+fi
 # if [ "$COMPILE_FILE" == "c" ] ; then
 echo -e "\t@mv \$^ \$(BUILD_DIR)" >> $Makefile 
 #fi
