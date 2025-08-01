@@ -21,11 +21,11 @@ sudo apt install valgrind
 ## How to use this project ? 
 Overview 
 > * Look at the directory structure supported for now in the Test folder 
-use the tree command 
+use the tree command. You can run script on the Test example provided to have a better idea of the project before implementing it in your project.
 1. Clone the project 
 ```
 cd ~
-git clone https://github.com/dibreyjonatan/Makefile-generation-for-C-and-Cpp-code-compilation-using-Bash.git
+git clone --recurse-submodules https://github.com/dibreyjonatan/Makefile-generation-for-C-and-Cpp-code-compilation-using-Bash.git
 
 cd Makefile-generation-for-C-and-Cpp-code-compilation-using-Bash
 
@@ -35,7 +35,7 @@ cd Makefile-generation-for-C-and-Cpp-code-compilation-using-Bash
 chmod +x generate_makefile_from_bash.sh
 ```
 3. Copy the path of the folder where you want to generate the Makefile
- 
+> Please provide absolute path to the directory 
  ```
  export PATH=~/C/path_to_dir
  ./generate_makefile_from_bash.sh --path $(PATH) --compile_file c
