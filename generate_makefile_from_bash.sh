@@ -163,8 +163,9 @@ fi
   fi
  elif [ "$COMPILE_FILE" == "cpp" ] ; then 
   c_flag="-Wall -Wextra -Werror -pedantic -std=c++20 -I$i_path"
-  googletest="-I googletest/googletest/include "
+  
   if [[ -n "$googletest" ]] ; then
+      googletest="-I googletest/googletest/include"
       if [[ "${#include_folder[@]}" -eq "1" ]] ; then 
       i_path=$(basename $(dirname $(realpath "${include_folder[0]}")))
        c_flag=" -Wall -Wextra -Werror -pedantic -std=c++20 -I$i_path $googletest"
@@ -386,11 +387,14 @@ echo -e "\t@find . -path \$(BUILD_DIR) -prune -o -name "*.gcno" -type f -exec mv
 fi
 echo -e "\t@mv \$^ \$(BUILD_DIR)" >> $Makefile
 echo "bin : \$(OBJS)" >> $Makefile
+echo "$googletest"
 if [ "$COMPILE_FILE"=="cpp" ] && [ -n "$googletest" ] ; then   # this is to link all the objects created
 LINK_LIBS=" -Lgoogletest/build/lib -lgtest_main -lgtest -lpthread"
  echo -e "\t\$(CC) \$(CFLAG) $^ -o  \$(BIN) $LINK_LIBS" >> $Makefile
 else
+if [ -z "$googletest" ] ; then 
 echo -e "\t\$(CC) \$(CFLAG) $^ -o \$(BIN)" >> $Makefile
+fi
 fi
 # if [ "$COMPILE_FILE" == "c" ] ; then
 echo -e "\t@mv \$^ \$(BUILD_DIR)" >> $Makefile 
