@@ -35,7 +35,8 @@ jobs:
          mkdir -p  Test/CPP_MULTIPLE_GOOGLE_TEST/googletest/build
          cd Test/CPP_MULTIPLE_GOOGLE_TEST/googletest/build
          cmake .. -DMOCK=OFF 
-         cd ../../../
+         pwd 
+         cd ../ 
          printf "yes\nyes\nyes\n" | ./generate_makefile_from_bash.sh --path Test/C_unit_test --compile_file c --coverage y 
          printf "no\n" | ./generate_makefile_from_bash.sh --path Test/CPP_MULTIPLE_GOOGLE_TEST --compile_file cpp --coverage y
         # printf is to inject answers to the bash scripts during CI 
