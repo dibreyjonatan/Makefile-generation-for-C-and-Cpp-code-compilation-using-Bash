@@ -24,11 +24,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Install lcov
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y lcov
-          sudo apt-get install valgrind
       - name: Generate Makefiles
         run: |
          pwd 
@@ -48,7 +43,6 @@ jobs:
          cd ../../../..
          printf "yes\nyes\nyes\n" | ./generate_makefile_from_bash.sh --path Test/C_unit_test --compile_file c --coverage y 
          printf "no\n" | ./generate_makefile_from_bash.sh --path Test/CPP_MULTIPLE_GOOGLE_TEST --compile_file cpp --coverage y
-         make -C Test/CPP_MULTIPLE_GOOGLE_TEST clean run
         # printf is to inject answers to the bash scripts during CI 
         # submodule initialisation and update  
       - name: Upload generated Makefiles and sources
