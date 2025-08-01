@@ -3,7 +3,19 @@
 #Author : KAMDA TEZEBO DIBREY JONATAN
 #Description : Generation of Makefile for compilation
 #version : 1.0 
- 
+#Adding color variables and output to beautify the user interactions
+source ./terminale_response.sh
+start 
+ BOLD=$(tput bold)
+ RESET=$(tput sgr0)
+ BLACK=$(tput setaf 0)
+ BG_GREEN=$(tput setab 2) 
+ YELLOW=$(tput setaf 3)
+ BG_YELLOW=$(tput setab 3)
+ RED=$(tput setaf 1)
+ BG_RED=$(tput setab 1)
+ BLUE=$(tput setaf 4)
+ BG_BLUE=$(tput setab 4)
 #global variable to store the directory path
 PROJECT_PATH=""  
 COMPILE_FILE=""
@@ -18,25 +30,24 @@ while [[ $# -gt 0 ]] ; do
    COMPILE_FILE="$2"
    shift 2 ;;
    --help|-h)
-   echo "The aim of this script is to generate a makefile for compilation of c/c++ code "
-   echo "In the --path option please provide an absolute path for the directory to be used"
-   echo " In the --compile_file flag you should either provide c or cpp "
-   echo " In the --coverage flag you should provide yes or YES or Y or y, if you wish to use coverage "
+   echo "${BOLD}${BG_BLUE}${BLACK}INFO :${RESET} The aim of this script is to generate a makefile for compilation of c/c++ code "
+   echo "${BOLD}${BG_BLUE}${BLACK}INFO :${RESET} In the --path option please provide an absolute path for the directory to be used"
+   echo "${BOLD}${BG_BLUE}${BLACK}INFO :${RESET} In the --compile_file flag you should either provide c or cpp "
+   echo "${BOLD}${BG_BLUE}${BLACK}INFO :${RESET} In the --coverage flag you should provide yes or YES or Y or y, if you wish to use coverage "
    shift 2
    exit 1  ;;
    --coverage )
    COVERAGE_OPTION="$2"
    shift 2 ;;
    *) 
-   echo "Error"
-   echo "please do $0 --help for more info" #$0 is to get the name of the script being executed 
+   echo "${BOLD}${BG_RED}${BLACK} ERROR :${RESET} please do $0 --help for more info" #$0 is to get the name of the script being executed 
    shift 2 
    exit 1 ;;
   esac
 done 
 # to check wether a path was passed or not
 if [ -z $PROJECT_PATH ] ; then  # the -z option means that the length of string is equal to zero
- echo "provide a path please"
+ echo "${BOLD}${BG_RED}${BLACK} ERROR :${RESET} provide a path please"
  exit 1 
 fi
 
@@ -46,7 +57,7 @@ if [ "$COMPILE_FILE" == "c" ] ; then
  elif [ "$COMPILE_FILE" == "cpp" ] ; then 
   CC=g++ 
   else 
-      echo "error in the source code to compile "
+      echo "${BOLD}${BG_RED}${BLACK} ERROR :${RESET} the source code to compile must be c or cpp"
       fi 
 
 #we need to create an Array of string to store all the c files  path    
@@ -58,7 +69,7 @@ done < <(find $PROJECT_PATH -name "*.$COMPILE_FILE" -print0)
 
 # Checking  if there exist c files
 if [ ${#array[@]} -eq 0 ]; then
-    echo "No $COMPILE_FILE files found, please provide a folder that contains $COMPILE_FILE"
+    echo "${BOLD}${BG_YELLOW}${BLACK} WARNING :${RESET} No $COMPILE_FILE files found, please provide a folder that contains $COMPILE_FILE"
     exit 1
 fi
 ########################################################################################
@@ -81,7 +92,7 @@ do
 done 
 # verify wether there are from thesame source or are from different sources 
 if [ $count -eq 0 ] ; then 
-   echo $count "All the files are from thesame repository"
+   echo "${BOLD}${BG_BLUE}${BLACK}INFO : ${RESET} All the $count files are from thesame repository"
    #Precsing compilation flags with respect to code 
    if [ "$COMPILE_FILE" == "c" ] ; then 
   c_flag="-Wall  -Werror -Wextra -std=c11"
@@ -89,7 +100,7 @@ if [ $count -eq 0 ] ; then
   c_flag="-Wall -Wextra -Werror -pedantic -std=c++20 "
       fi 
 else 
-   echo "There are $count sub folders containing the $COMPILE_FILE files"  
+   echo "${BOLD}${BG_BLUE}${BLACK}INFO :${RESET} There are $count sub folders containing the $COMPILE_FILE files"  
    include_folder=() 
    while IFS= read -r -d $'\0'  ; do 
       include_folder+=("$REPLY")
@@ -101,7 +112,7 @@ if [[ "$COMPILE_FILE" == "c" ]] ; then
    for i in "${include_folder[@]}";
 do 
    if [[ "$i" =~ "Unity" ]] && [[ -z  "$unity"  ]]; then
-  echo "Unity sub folder found"
+  echo "${BOLD}${BG_BLUE}${BLACK}INFO :${RESET} Unity sub folder found"
   unity="Unity/src"
   else 
    i_path=$(basename $(dirname $(realpath "$i")))
@@ -119,7 +130,7 @@ if [[ "$COMPILE_FILE" == "cpp" ]] ; then
    for i in "${include_folder[@]}";
 do 
    if [[ "$i" =~ "googletest" ]] && [[ -z  "$googletest"  ]]; then
-  echo "google folder found"
+  echo "${BOLD}${BG_BLUE}${BLACK}INFO :${RESET} googletest folder found"
   googletest="true"
   else 
    i_path=$(basename $(dirname $(realpath "$i")))
@@ -182,21 +193,21 @@ makefile_file=()
 done < <(find $PROJECT_PATH -type d \( -name 'Unity' -o -name 'googletest' \) -prune -false -o -name  "Makefile" -print0) #because Unity contains Makefiles, the goal is to make a search everywhere except there
 #test if a makefile exists
 if [ ${#makefile_file[@]} -eq 0 ]  ; then 
-echo " No Makefile exists we are going to generate one ........................"
+echo " ${BOLD}${BG_BLUE}${BLACK}INFO : ${RESET} No Makefile exists we are going to generate one ........................"
 touch $Makefile 
 else 
-  echo -n "Would you like to generate a new  Makefile ? : " # -n prevents echo to print a new line  
+  echo -n "${BOLD}${BG_YELLOW}${BLACK} WARNING : ${RESET} Would you like to generate a new  Makefile ? : " # -n prevents echo to print a new line  
   read  ans   #to read input from terminale
   case $ans in 
   [Yy] | [Yy][eE][sS] ) # to test either y or Y or yes or YES or Yes or yEs or yeS or YeS or yES or YEs
-  echo "generating a new Makefile............................"
+  echo "${BOLD}${BG_BLUE}${BLACK}INFO : ${RESET} generating a new Makefile............................"
   rm $Makefile
   touch $Makefile ;;
   [Nn] | [Nn][Oo] ) # to test either n or N or No or nO or NO or no 
-  echo "No generation done !"
+  echo "${BOLD}${BG_BLUE}${BLACK}INFO : ${RESET} No generation done !"
   exit 1 ;;
   *) 
-  echo "Please either put y/n or yes/no " 
+  echo "${BOLD}${BG_RED}${BLACK} FAIL : ${RESET} Please either put y/n or yes/no " 
    exit 1 ;;
    esac 
 fi
@@ -218,17 +229,17 @@ else
 #####################################################################################################
 VALGRIND_OPTION=""
 SANITIZER_OPTION=""
- echo -n "Would you like to add dynamique analysis to your makefile ? (y/n ) : " 
+ echo -n "${BOLD}${BG_BLUE}${BLACK}INFO :${RESET} Would you like to add dynamique analysis to your makefile ? (y/n ) : " 
   read  ans 
   case $ans in 
   [Yy] | [Yy][eE][sS] ) # to test either y or Y or yes or YES or Yes or yEs or yeS or YeS or yES or YEs
-  echo " You can choose either Valgrind or Sanitizer"
+  echo " ${BOLD}${BG_BLUE}${BLACK}INFO :${RESET} You can choose either Valgrind or Sanitizer"
   echo -n "Will you add Valgrind to your makefile ? (y/n) : "
   read ans 
   if [ "$ans" == "y" -o "$ans" == "yes" -o "$ans" == "YES" ] ; then 
     VALGRIND_OPTION="y"
   else 
-    echo -n "Will you add SANITIZER to your makefile ? (y/n) : "
+    echo -n "${BOLD}${BG_BLUE}${BLACK}INFO :${RESET} Will you add SANITIZER to your makefile ? (y/n) : "
     read ans 
     if [ "$ans" == "y" -o "$ans" == "yes" -o "$ans" == "YES" ] ; then 
       SANITIZER_OPTION="y"
@@ -236,10 +247,10 @@ SANITIZER_OPTION=""
   fi  
   ;;
   [Nn] | [Nn][Oo] ) 
-  echo "No dynamique analysis will be added to the project"
+  echo "${BOLD}${BG_BLUE}${BLACK}INFO :${RESET} No dynamique analysis will be added to the project"
   ;;
   *) 
-  echo "Please either put y/n or yes/no " 
+  echo "${BOLD}${BG_RED}${BLACK} FAIL :${RESET} Please either put y/n or yes/no " 
    exit 1 ;;
    esac 
 ############################################################################################################
@@ -269,16 +280,16 @@ build="$PROJECT_PATH/build"
    listing=$(ls $build ) # to get the output of list
    if [  ${#listing} -eq 0 ] ; then  #did corrections as string was too large,so i did comparaison of length to 0 by auto calculating the length
                                      # but in the previous commits, the string length was compared to 0 which cause bugs as build list increases in size.
-   echo "$build is empty no need of cleaning"
+   echo "${BOLD}${BG_BLUE}${BLACK}INFO :${RESET} $build is empty no need of cleaning"
    else
-   echo " The following files of $build will be deleted : $listing "
+   echo "${BOLD}${BG_BLUE}${BLACK}INFO :${RESET} The following files of $build will be deleted : $listing "
    echo "cleaning of it content............"
    if [ -z "$googletest" ] ; then 
    rm $build/* 
    else
     rm -r $build/*
    fi
-   echo "cleaning done, $build is empty"
+   echo "${BOLD}${BG_GREEN}${BLACK} SUCCESS :${RESET} cleaning done, $build is empty"
    fi
  else 
    mkdir $build
@@ -390,6 +401,6 @@ elif [ "$COMPILE_FILE" == "cpp" ] ; then
 echo "%.o : %.cpp" >> $Makefile
 fi
 echo -e "\t\$(CC) -c \$(CFLAG)  $^ -o \$@" >> $Makefile 
-echo "generation done.................................."
-echo -n "To run the makefile use this command "
+final_statement
+echo -n "${BOLD}${BG_BLUE}${BLACK} INFO :${RESET} To run the makefile use this command "
 echo  "make -C $PROJECT_PATH clean run"
