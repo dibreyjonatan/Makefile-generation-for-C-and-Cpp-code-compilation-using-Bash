@@ -38,7 +38,7 @@ jobs:
 
          mkdir -p Test/CPP_MULTIPLE_GOOGLE_TEST/googletest/build
          cd Test/CPP_MULTIPLE_GOOGLE_TEST/googletest/build
-         cmake .. -DCMAKE_BUILD_TYPE=Release
+         cmake .. -DMOCK=OFF -DCMAKE_BUILD_TYPE=Release
          make -j$(nproc)
          ls -lh lib*
          cd ../../../..
