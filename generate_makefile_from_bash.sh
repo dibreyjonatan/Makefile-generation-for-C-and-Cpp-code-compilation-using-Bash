@@ -58,9 +58,10 @@ if [ "$COMPILE_FILE" == "c" ] ; then
   CC=g++ 
   else 
       echo "${BOLD}${BG_RED}${BLACK} ERROR :${RESET} the source code to compile must be c or cpp"
+      exit 1
       fi 
 
-#we need to create an Array of string to store all the c files  path    
+#we need to create an Array of string to store all the c or c++ files  path    
 array=()
 while IFS= read -r -d $'\0'  ; do 
       array+=("$REPLY")
