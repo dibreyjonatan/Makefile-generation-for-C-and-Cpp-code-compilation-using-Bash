@@ -43,3 +43,65 @@ chmod +x generate_makefile_from_bash.sh
  ```
  for more help do :
  > ./generate_makefile_from_bash.sh --help
+
+ ### Project structure where Automation can be done 
+This project structure holds for c or cpp.
+> You only need to respect the tree structure 
+ 
+ 1.
+ ```
+ project 
+ └── hello.c
+ ```
+ 2. 
+ ```
+project 
+├── header.c 
+├── include.h 
+└── program.c
+```
+ 3. 
+ ```
+project 
+├── include
+│   ├── math_utils.h
+│   └── message.h
+├── main.cpp
+├── src
+│   └── math_utils.cpp
+└── utils
+    └── message.cpp
+```
+4.
+```
+project 
+.
+├── googletest
+│   ├── BUILD.bazel
+│   ├── ci
+│   ├── CMakeLists.txt
+│   ├── CONTRIBUTING.md
+│   ├── CONTRIBUTORS
+│   ├── docs
+│   ├── fake_fuchsia_sdk.bzl
+│   ├── googlemock
+│   ├── googletest
+│   ├── googletest_deps.bzl
+│   ├── LICENSE
+│   ├── MODULE.bazel
+│   ├── README.md
+│   ├── WORKSPACE
+│   └── WORKSPACE.bzlmod
+├── include
+│   └── math_utils.h
+├── src
+│   ├── math_functions.cpp
+│   └── math_utils.cpp
+├── test
+│   └── test_math_utils.cpp
+└── utils
+    └── math_functions.h
+
+```
+
+
