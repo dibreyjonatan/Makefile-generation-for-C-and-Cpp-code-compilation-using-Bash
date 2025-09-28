@@ -41,7 +41,7 @@ chmod +x generate_makefile_from_bash.sh
  ./generate_makefile_from_bash.sh --path $(PATH) --compile_file c
 
  ```
- for more help do :
+ for more info on execution flags do :
  > ./generate_makefile_from_bash.sh --help
 
  ### Project structure where Automation can be done 
@@ -72,7 +72,20 @@ project
 └── utils
     └── message.cpp
 ```
-4.
+
+4. 
+```
+├── include
+│   ├── my_math.h
+│   └── utils.h
+├── src
+│   └── program.c
+└── utils
+    ├── my_math.c
+    └── utils.c
+```    
+
+5. 
 ```
 project 
 .
