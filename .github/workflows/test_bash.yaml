@@ -93,7 +93,8 @@ jobs:
           make -C Test/C_unit_test clean run
           make -C Test/CPP_MULTIPLE_GOOGLE_TEST clean run
   load:
-     
+    runs-on: ubuntu-latest
+    steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
@@ -104,4 +105,4 @@ jobs:
         with:
           commit_message: "CI: Auto-update generated files"
           branch: main
-          file_pattern: "generated-code/"  # commit only the files you want        
+          file_pattern: "generated-code/"
