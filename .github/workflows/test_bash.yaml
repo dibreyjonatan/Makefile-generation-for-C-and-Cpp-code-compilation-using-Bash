@@ -92,3 +92,16 @@ jobs:
           make -C Test/CPP_MULTIPLE_FILE clean run
           make -C Test/C_unit_test clean run
           make -C Test/CPP_MULTIPLE_GOOGLE_TEST clean run
+  load:
+     
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: true  
+
+      - name: Auto commit generated files
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "CI: Auto-update generated files"
+          branch: main
+          file_pattern: "generated-code/"  # commit only the files you want        
