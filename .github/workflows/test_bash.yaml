@@ -93,6 +93,7 @@ jobs:
           make -C Test/C_unit_test clean run
           make -C Test/CPP_MULTIPLE_GOOGLE_TEST clean run
   load:
+    needs: generation_of_makefile
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
