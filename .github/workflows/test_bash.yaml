@@ -105,5 +105,5 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "CI: Auto-update generated files"
-          branch: main
+          branch: master 
           file_pattern: "generated-code/"
