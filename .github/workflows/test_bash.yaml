@@ -92,23 +92,22 @@ jobs:
           make -C Test/CPP_MULTIPLE_FILE clean run
           make -C Test/C_unit_test clean run
           make -C Test/CPP_MULTIPLE_GOOGLE_TEST clean run
+
   load:
-    needs: tests 
     runs-on: ubuntu-latest
+    needs: tests
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
-          persist-credentials: true  
-
-      - name: Copy Test/** to OUTPUT_TEST
-        run: |
-          mkdir -p OUTPUT_TEST
-          rsync -a Test/ OUTPUT_TEST/
-
-      - name: Auto commit OUTPUT_TEST
+          persist-credentials: true
+      - name: Download generated files into OUTPUT
+        uses: actions/download-artifact@v4
+        with:
+          name: generated-code
+          path: ./OUTPUT
+      - name: Auto commit OUTPUT
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "CI: Auto-update generated OUTPUT_TEST files"
+          commit_message: "CI: Auto-update generated OUTPUT files"
           branch: master
-          file_pattern: "OUTPUT_TEST/**"
+          file_pattern: "OUTPUT/**"
