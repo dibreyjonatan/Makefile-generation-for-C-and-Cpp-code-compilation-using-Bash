@@ -106,4 +106,4 @@ jobs:
         with:
           commit_message: "CI: Auto-update generated files"
           branch: master 
-          file_pattern: "generated-code/"
+          file_pattern: "Test/**"
