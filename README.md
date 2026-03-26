@@ -118,3 +118,5 @@ project
 ```
 
 
+### To resolve Upload of CI into master branch
+Go to the Actions settings and enable read and write permission of artefacts
