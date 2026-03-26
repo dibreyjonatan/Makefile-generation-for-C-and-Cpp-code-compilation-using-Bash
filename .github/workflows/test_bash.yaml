@@ -101,9 +101,14 @@ jobs:
         with:
           persist-credentials: true  
 
-      - name: Auto commit generated files
+      - name: Copy Test/** to OUTPUT_TEST
+        run: |
+          mkdir -p OUTPUT_TEST
+          rsync -a Test/ OUTPUT_TEST/
+
+      - name: Auto commit OUTPUT_TEST
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "CI: Auto-update generated files"
-          branch: master 
-          file_pattern: "Test/**"
+          commit_message: "CI: Auto-update generated OUTPUT_TEST files"
+          branch: master
+          file_pattern: "OUTPUT_TEST/**"
