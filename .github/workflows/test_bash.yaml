@@ -105,7 +105,7 @@ jobs:
         run: |
           mkdir -p OUTPUT_TEST
           rsync -a Test/ OUTPUT_TEST/
-          
+#
       - name: Auto commit OUTPUT_TEST
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
