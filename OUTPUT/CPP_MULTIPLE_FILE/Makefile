@@ -6,7 +6,7 @@ CFLAG=-Wall -Wextra -Werror -pedantic -std=c++20  -Iinclude -fprofile-arcs -ftes
 COVERAGE=yes
 BUILD_DIR=build
 BIN = bin
-OBJS_SRC=utils/message.cpp main.cpp src/math_utils.cpp 
+OBJS_SRC=main.cpp utils/message.cpp src/math_utils.cpp 
 OBJS=$(patsubst %.cpp, %.o , $(OBJS_SRC))
 ifeq ($(MAKECMDGOALS),)
 $(error "error please pass a target, either clean or and run")

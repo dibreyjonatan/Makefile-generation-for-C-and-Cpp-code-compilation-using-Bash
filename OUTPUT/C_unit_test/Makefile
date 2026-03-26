@@ -6,7 +6,7 @@ CFLAG=-Wall  -Werror -Wextra -std=c11 -Iinclude -Iutils  -IUnity/src -fprofile-a
 COVERAGE=yes
 BUILD_DIR=build
 BIN = bin
-OBJS_SRC=Unity/src/unity.c test/test_main.c src/cal.c src/utils.c 
+OBJS_SRC=Unity/src/unity.c test/test_main.c src/utils.c src/cal.c 
 OBJS=$(patsubst %.c, %.o , $(OBJS_SRC))
 ifeq ($(MAKECMDGOALS),)
 $(error "error please pass a target, either clean or and run")
